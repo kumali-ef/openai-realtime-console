@@ -20,7 +20,7 @@ const PORT = parseInt(process.env.PORT) || 8081;
 const fastify = Fastify();
 fastify.register(fastifyWebsocket);
 
-const relay = new RealtimeRelay(OPENAI_API_KEY);
+const relay = new RealtimeRelay(OPENAI_API_KEY, fastify.log);
 
 fastify.get('/', { websocket: true }, (connection, req) => {
   relay.connectionHandler(connection.socket, req);
@@ -28,8 +28,8 @@ fastify.get('/', { websocket: true }, (connection, req) => {
 
 fastify.listen({ port: PORT }, (err, address) => {
   if (err) {
-    console.error(err);
+    fastify.log.error(err);
     process.exit(1);
   }
-  console.log(`Server listening at ${address}`);
+  fastify.log.info(`Server listening at ${address}`);
 });

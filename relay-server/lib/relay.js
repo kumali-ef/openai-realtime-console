@@ -1,14 +1,15 @@
 import { RealtimeClient } from '@openai/realtime-api-beta';
 
 export class RealtimeRelay {
-  constructor(apiKey) {
+  constructor(apiKey, logger) {
     this.apiKey = apiKey;
+    this.logger = logger;
     this.sockets = new WeakMap();
   }
 
   async connectionHandler(ws, req) {
     if (!req.url) {
-      this.log('No URL provided, closing connection.');
+      this.logger.error('No URL provided, closing connection.');
       ws.close();
       return;
     }
@@ -17,18 +18,18 @@ export class RealtimeRelay {
     const pathname = url.pathname;
 
     if (pathname !== '/') {
-      this.log(`Invalid pathname: "${pathname}"`);
+      this.logger.error(`Invalid pathname: "${pathname}"`);
       ws.close();
       return;
     }
 
     // Instantiate new client
-    this.log(`Connecting with key "${this.apiKey.slice(0, 3)}..."`);
+    this.logger.info(`Connecting with key "${this.apiKey.slice(0, 3)}..."`);
     const client = new RealtimeClient({ apiKey: this.apiKey });
 
     // Relay: OpenAI Realtime API Event -> Browser Event
     client.realtime.on('server.*', (event) => {
-      this.log(`Relaying "${event.type}" to Client`);
+      this.logger.info(`Relaying "${event.type}" to Client`);
       ws.send(JSON.stringify(event));
     });
     client.realtime.on('close', () => ws.close());
@@ -39,11 +40,10 @@ export class RealtimeRelay {
     const messageHandler = (data) => {
       try {
         const event = JSON.parse(data);
-        this.log(`Relaying "${event.type}" to OpenAI`);
+        this.logger.info(`Relaying "${event.type}" to OpenAI`);
         client.realtime.send(event.type, event);
       } catch (e) {
-        console.error(e.message);
-        this.log(`Error parsing event from client: ${data}`);
+        this.logger.error(`Error parsing event from client: ${data}`);
       }
     };
     ws.on('message', (data) => {
@@ -57,20 +57,16 @@ export class RealtimeRelay {
 
     // Connect to OpenAI Realtime API
     try {
-      this.log(`Connecting to OpenAI...`);
+      this.logger.info(`Connecting to OpenAI...`);
       await client.connect();
     } catch (e) {
-      this.log(`Error connecting to OpenAI: ${e.message}`);
+      this.logger.error(`Error connecting to OpenAI: ${e.message}`);
       ws.close();
       return;
     }
-    this.log(`Connected to OpenAI successfully!`);
+    this.logger.info(`Connected to OpenAI successfully!`);
     while (messageQueue.length) {
       messageHandler(messageQueue.shift());
     }
-  }
-
-  log(...args) {
-    console.log(`[RealtimeRelay]`, ...args);
   }
 }
