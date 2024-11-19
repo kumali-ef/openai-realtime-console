@@ -22,8 +22,8 @@ fastify.register(fastifyWebsocket);
 
 const relay = new RealtimeRelay(OPENAI_API_KEY, fastify.log);
 
-fastify.get('/', { websocket: true }, (connection, req) => {
-  relay.connectionHandler(connection, req);
+fastify.get('/', { websocket: true }, (socket, req) => {
+  relay.connectionHandler(socket, req);
 });
 
 fastify.listen({ port: PORT, host: '0.0.0.0' }, (err, address) => {

@@ -7,8 +7,7 @@ export class RealtimeRelay {
     this.sockets = new WeakMap();
   }
 
-  async connectionHandler(connection, req) {
-    const ws = connection.socket;
+  async connectionHandler(ws, req) {
 
     if (!req.url) {
       this.logger.error('No URL provided, closing connection.');
