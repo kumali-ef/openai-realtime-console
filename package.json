@@ -6,7 +6,7 @@
   "dependencies": {
     "@fastify/formbody": "^8.0.1",
     "@fastify/websocket": "^11.0.1",
-    "@openai/realtime-api-beta": "github:openai/openai-realtime-api-beta",
+    "@openai/realtime-api-beta": "github:kumali-ef/openai-realtime-api-beta#4a7108cf9d",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",

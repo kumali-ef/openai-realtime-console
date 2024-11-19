@@ -23,6 +23,8 @@ fastify.register(fastifyWebsocket);
 const relay = new RealtimeRelay(OPENAI_API_KEY, fastify.log);
 
 fastify.get('/', { websocket: true }, (socket, req) => {
+  fastify.log.info('incoming socket connect...');
+  fastify.log.info(JSON.stringify(req));
   relay.connectionHandler(socket, req);
 });
 
