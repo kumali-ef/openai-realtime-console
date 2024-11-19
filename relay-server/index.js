@@ -1,5 +1,8 @@
 import { RealtimeRelay } from './lib/relay.js';
 import dotenv from 'dotenv';
+import Fastify from 'fastify';
+import fastifyWebsocket from '@fastify/websocket';
+
 dotenv.config({ override: true });
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
@@ -14,5 +17,19 @@ if (!OPENAI_API_KEY) {
 
 const PORT = parseInt(process.env.PORT) || 8081;
 
+const fastify = Fastify();
+fastify.register(fastifyWebsocket);
+
 const relay = new RealtimeRelay(OPENAI_API_KEY);
-relay.listen(PORT);
+
+fastify.get('/', { websocket: true }, (connection, req) => {
+  relay.connectionHandler(connection.socket, req);
+});
+
+fastify.listen({ port: PORT }, (err, address) => {
+  if (err) {
+    console.error(err);
+    process.exit(1);
+  }
+  console.log(`Server listening at ${address}`);
+});
